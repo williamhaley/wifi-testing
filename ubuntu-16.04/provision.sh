@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+{
+sudo apt-get install --no-install-recommends --yes \
+	network-manager \
+	iperf3 \
+	lshw \
+	wireless-tools
+
+# This kernel is what would be used by a new Ubuntu install. It includes the
+# brcmfmac module
+# https://wiki.archlinux.org/index.php/broadcom_wireless#History
+sudo apt-get install --no-install-recommends --yes \
+	linux-generic-hwe-16.04 \
+	linux-headers-generic-hwe-16.04 \
+	linux-image-generic-hwe-16.04
+
+sudo systemctl enable network-manager.service 
+sudo systemctl start network-manager.service
+} &> /var/log/provision.log
+
+echo "Done"
+

@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+source /vconf/Test.conf
+
+iperf3 --version
+
+echo "Using iperf server ${IPERF_SERVER}"
+NIC=$(/vbin/get-nic)
+IP=$(/vbin/get-ip)
+echo "Client IP is: ${IP}"
+echo "Testing download speeds..."
+
+TIMESTAMP=$(date +%s)
+
+sudo mkdir -p /vagrant/logs
+
+DOWNLOAD_LOG="/vagrant/logs/${TIMESTAMP}-download.log"
+UPLOAD_LOG="/vagrant/logs/${TIMESTAMP}-upload.log"
+
+# Cannot use --logfile until we get a newer version of iperf3.
+
+iperf3 \
+	--bind "${IP}" \
+	--reverse \
+	--format m \
+	--version4 \
+	--client "${IPERF_SERVER}" > "${DOWNLOAD_LOG}"
+
+echo "Testing upload speeds..."
+
+iperf3 \
+	--bind "${IP}" \
+	--format m \
+	--version4 \
+	--client "${IPERF_SERVER}" > "${UPLOAD_LOG}"
+

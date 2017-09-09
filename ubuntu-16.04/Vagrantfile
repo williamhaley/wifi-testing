@@ -1,0 +1,18 @@
+# Shared configs
+load "Vagrantfile.conf"
+
+Vagrant.configure("2") do |config|
+	config.vm.box         = "ubuntu/xenial64"
+	config.vm.box_version = "20170830.1.1"
+
+	config.vm.provider :virtualbox do |vb|
+    	vb.name   = "#{MACHINE_NAME}"
+		vb.memory = 2048
+    end
+
+	config.vm.provision "shell", path: "provision.sh"
+
+	config.vm.synced_folder "../guest-bin/", "/vbin"
+	config.vm.synced_folder "../guest-conf/", "/vconf"
+end
+
