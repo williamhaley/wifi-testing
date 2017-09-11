@@ -31,6 +31,12 @@ if [ -z "${VENDOR_ID}" ] || [ -z "${PRODUCT_ID}" ]; then
     usage
 fi
 
+if ! lsusb | grep -i "${VENDOR_ID}:${PRODUCT_ID}";
+then
+	echo "No USB device found with specified vendor and product ids."
+	exit 1
+fi
+
 echo "Using vendorid ${VENDOR_ID} and productid ${PRODUCT_ID}"
 
 # Run the rest in a subshell

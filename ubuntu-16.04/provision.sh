@@ -7,6 +7,7 @@ sudo apt-get install --no-install-recommends --yes \
 	network-manager \
 	iperf3 \
 	lshw \
+	jq \
 	wireless-tools
 
 # This kernel is what would be used by a new Ubuntu install. It includes the

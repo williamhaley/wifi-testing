@@ -4,35 +4,47 @@ set -eo pipefail
 
 source /vconf/Test.conf
 
-iperf3 --version
+iperf3 --version | tail -1
 
-echo "Using iperf server ${IPERF_SERVER}"
+echo "server: ${IPERF_SERVER}"
 NIC=$(/vbin/get-nic)
 IP=$(/vbin/get-ip)
-echo "Client IP is: ${IP}"
-echo "Testing download speeds..."
+echo "client: ${IP}"
+
+START=$(date)
+
+echo "kernel release: $(uname --kernel-release)"
+echo "kernel version: $(uname --kernel-version)"
+
+DRIVER=$(sudo ethtool -i wlan0 | grep "^driver" | awk '{print $2}')
+
+echo "driver: ${DRIVER}"
+echo "driver version: $(sudo ethtool -i wlan0 | grep "^version" | awk '{print $2}')"
+
+echo "module filename: $(sudo modinfo brcmfmac | grep "^filename" | awk '{print $2}')"
 
 TIMESTAMP=$(date +%s)
 
-sudo mkdir -p /vagrant/logs
+COUNTER=0
+while [ "${COUNTER}" -lt "${MAX_ITERATIONS}" ]
+do
+	DOWNLOAD_INTERVALS="/tmp/download-intervals-${TIMESTAMP}.log"
+	DOWNLOAD_SUMMARY=$(IP=$IP IPERF_SERVER=$IPERF_SERVER INTERVAL_LOG=$DOWNLOAD_INTERVALS /vbin/download)
+	echo "${DOWNLOAD_SUMMARY}"
 
-DOWNLOAD_LOG="/vagrant/logs/${TIMESTAMP}-download.log"
-UPLOAD_LOG="/vagrant/logs/${TIMESTAMP}-upload.log"
+	sleep 5
 
-# Cannot use --logfile until we get a newer version of iperf3.
+	UPLOAD_INTERVALS="/tmp/upload-intervals-${TIMESTAMP}.log"
+	UPLOAD_SUMMARY=$(IP=$IP IPERF_SERVER=$IPERF_SERVER INTERVAL_LOG=$UPLOAD_INTERVALS TIMESTAMP=$TIMESTAMP /vbin/upload)
+	echo "${UPLOAD_SUMMARY}"
+	
+	let COUNTER=COUNTER+1
+	
+	sleep 5
+done
 
-iperf3 \
-	--bind "${IP}" \
-	--reverse \
-	--format m \
-	--version4 \
-	--client "${IPERF_SERVER}" > "${DOWNLOAD_LOG}"
+echo "Started: ${START}"
+echo "Ended: $(date)"
 
-echo "Testing upload speeds..."
-
-iperf3 \
-	--bind "${IP}" \
-	--format m \
-	--version4 \
-	--client "${IPERF_SERVER}" > "${UPLOAD_LOG}"
-
+# TODO WFH Analyze data. Any outliers? Median, mean, max, min.
+# python3 analyze.py

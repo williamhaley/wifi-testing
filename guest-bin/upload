@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+TIMESTAMP=$(date "+%s")
+
+LOG="/tmp/upload-${TIMESTAMP}.json"
+
+# Cannot use --logfile until we get a newer version of iperf3.
+iperf3 \
+	--bind "${IP}" \
+	--json \
+	--format m \
+	--version4 \
+	--client "${IPERF_SERVER}" > "${LOG}"
+
+if [ `jq "has(\"error\")" "${LOG}"` == "true" ];
+then
+	echo "-1" >> "${INTERVAL_LOG}"
+	jq ".error" "${LOG}"
+	exit 0
+fi
+
+# Look at the summary of each interval.
+ALL_MBPS=$(jq ".intervals | map_values(.sum.bits_per_second/1000000) | .[]" "${LOG}")
+# Get the summary of the sent data.
+SUMMARY_MBPS=$(jq ".end.sum_sent.bits_per_second | ./1000000" "${LOG}")
+
+# Write each interval
+if [ -n "${INTERVAL_LOG}" ];
+then
+	echo "${ALL_MBPS}" >> "${INTERVAL_LOG}"
+fi
+
+# Display the summary.
+echo "↑ ${SUMMARY_MBPS} Mbps"
