@@ -24,17 +24,17 @@ echo "driver version: $(sudo ethtool -i wlan0 | grep "^version" | awk '{print $2
 echo "module filename: $(sudo modinfo brcmfmac | grep "^filename" | awk '{print $2}')"
 
 TIMESTAMP=$(date +%s)
+DOWNLOAD_INTERVALS="/tmp/download-intervals-${TIMESTAMP}.log"
+UPLOAD_INTERVALS="/tmp/upload-intervals-${TIMESTAMP}.log"
 
 COUNTER=0
 while [ "${COUNTER}" -lt "${MAX_ITERATIONS}" ]
 do
-	DOWNLOAD_INTERVALS="/tmp/download-intervals-${TIMESTAMP}.log"
 	DOWNLOAD_SUMMARY=$(IP=$IP IPERF_SERVER=$IPERF_SERVER INTERVAL_LOG=$DOWNLOAD_INTERVALS /vbin/download)
 	echo "${DOWNLOAD_SUMMARY}"
 
 	sleep 5
 
-	UPLOAD_INTERVALS="/tmp/upload-intervals-${TIMESTAMP}.log"
 	UPLOAD_SUMMARY=$(IP=$IP IPERF_SERVER=$IPERF_SERVER INTERVAL_LOG=$UPLOAD_INTERVALS TIMESTAMP=$TIMESTAMP /vbin/upload)
 	echo "${UPLOAD_SUMMARY}"
 	
@@ -43,8 +43,11 @@ do
 	sleep 5
 done
 
-echo "Started: ${START}"
-echo "Ended: $(date)"
+echo "started: ${START}"
+echo "ended: $(date)"
 
-# TODO WFH Analyze data. Any outliers? Median, mean, max, min.
-# python3 analyze.py
+echo "download stats:"
+/vbin/analyze.py "${DOWNLOAD_INTERVALS}"
+
+echo "upload stats:"
+/vbin/analyze.py "${UPLOAD_INTERVALS}"
