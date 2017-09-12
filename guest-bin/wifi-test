@@ -18,7 +18,7 @@ DOWNLOAD_INTERVALS="/tmp/download-intervals-${TIMESTAMP}.log"
 UPLOAD_INTERVALS="/tmp/upload-intervals-${TIMESTAMP}.log"
 
 COUNTER=0
-while [ "${COUNTER}" -lt "${MAX_ITERATIONS}" ]
+while [ "${COUNTER}" -lt "${MAX_TESTS}" ]
 do
 	DOWNLOAD_SUMMARY=$(IP=$IP IPERF_SERVER=$IPERF_SERVER INTERVAL_LOG=$DOWNLOAD_INTERVALS /vbin/download)
 	echo "${DOWNLOAD_SUMMARY}"
@@ -33,6 +33,15 @@ do
 	sleep 5
 done
 
+echo "================================================"
+
+iperf3 --version | tail -1
+
+echo "server: ${IPERF_SERVER}"
+NIC=$(/vbin/get-nic)
+IP=$(/vbin/get-ip)
+echo "client: ${IP}"
+
 echo "kernel release: $(uname --kernel-release)"
 echo "kernel version: $(uname --kernel-version)"
 DRIVER=$(sudo ethtool -i wlan0 | grep "^driver" | awk '{print $2}')
@@ -44,7 +53,7 @@ echo "started: ${START}"
 echo "ended: $(date)"
 
 echo "download stats:"
-/vbin/analyze.py "${DOWNLOAD_INTERVALS}"
+/vbin/analyze "${DOWNLOAD_INTERVALS}"
 
 echo "upload stats:"
-/vbin/analyze.py "${UPLOAD_INTERVALS}"
+/vbin/analyze "${UPLOAD_INTERVALS}"

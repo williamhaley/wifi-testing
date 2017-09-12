@@ -9,12 +9,12 @@ TARGET=ubuntu-16.04 ./build.sh
 ```
 
 ```
-USB=2 TARGET=ubuntu-16.04 ./run.sh -v 0cf3 -p 9271
+./run
 ```
 
 # Sources
 
-* https://code-chronicle.blogspot.com/2014/08/connect-usb-device-through-vagrant.html
+* [Connect a Usb device through Vagrant](https://code-chronicle.blogspot.com/2014/08/connect-usb-device-through-vagrant.html)
 * https://www.vagrantup.com/docs/cli/snapshot.html
 * https://linux.die.net/man/1/nmcli
 * https://unix.stackexchange.com/questions/286721/get-wi-fi-interface-device-names
