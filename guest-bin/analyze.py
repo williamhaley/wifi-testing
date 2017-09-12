@@ -2,16 +2,18 @@
 
 import os
 import sys
+import math
 
 file_name = sys.argv[1]
 
 sum = 0
 count = 0
 errors = 0
-max = 0
+max = 90
 min = -1
 zeros = 0
-max_range = 10
+max_range = 15
+max_width = 20
 
 numbers = []
 
@@ -35,16 +37,33 @@ with open(file_name, "r") as file:
         count += 1
         sum = sum + as_num
 
-# TODO WFH Two charts. One doing what I'm doing now to show off strength. One
-# to plot a histogram of where most of the results lie.
+# TODO (max / (max_range - 1)) if you want to use a dynamic max.
+increment = max / max_range
+
+index = 0
+buckets = [0] * max_range
 
 numbers.sort()
-for number in numbers:
-    ticks = ''.join(list(map(lambda x: "#", range(0, int(number)))))
-    print("{:.2f} | {}".format(number, ticks))
 
-print("domain: {}".format(count))
+max_count = max_width
+
+for number in numbers:
+    bucket_index = math.floor(number / increment)
+    buckets[bucket_index] += 1
+    if buckets[bucket_index] > max_width:
+        max_count = buckets[bucket_index]
+
+last_min = 0
+last_max = increment
+for bucket in buckets:
+    ticks = ''.join(list(map(lambda x: "#", range(0, int(bucket * (max_count / max_width))))))
+    print("{:6.2f} Mbps - {:6.2f} Mbps | {}".format(last_min, last_max, ticks))
+    last_min += increment
+    last_max += increment
+
+print("intervals: {}".format(count))
 print("errors: {}".format(errors))
 print("max: {} Mbps".format(max))
 print("min: {} Mbps".format(min))
 print("average: {:.2f} Mbps".format(sum / count))
+
