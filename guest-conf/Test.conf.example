@@ -1,4 +1,3 @@
 SSID=TheWiFiNetworkName
 PASSWORD=TheWiFiNetworkPassword
 IPERF_SERVER=IPAddressOfYourIperfServer
-MAX_TESTS=20

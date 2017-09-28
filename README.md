@@ -2,6 +2,14 @@
 
 Scripts and configurations to spin up machines for testing WiFi.
 
+# Prerequisites
+
+* lsusb
+* tee
+* python3
+* Virtualbox with the latest extension pack
+* Vagrant
+
 # Commands
 
 ```

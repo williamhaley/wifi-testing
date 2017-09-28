@@ -3,23 +3,27 @@
 import subprocess
 import re
 import shlex
+import datetime
+import os
+import sys
+import json
 
 # Prompt to choose a USB device.
-devices = (subprocess.check_output(["lsusb"])).splitlines()
-devices = list(map(lambda device: device.decode("utf8"), devices))
+devices = (subprocess.check_output(['lsusb'])).splitlines()
+devices = list(map(lambda device: device.decode('utf8'), devices))
 
 for index, device in enumerate(devices):
-	print("{:2d} | {}".format(index + 1, device))
+	print('{:2d} | {}'.format(index + 1, device))
 device_index = int(input('\nSelect a device: '))
 
 # Parse selection.
 device = devices[device_index - 1]
-device_ids = re.findall(r"([a-zA-Z0-9]{4}):([a-zA-Z0-9]{4})", device)[0]
+device_ids = re.findall(r'([a-zA-Z0-9]{4}):([a-zA-Z0-9]{4})', device)[0]
 vendor_id = device_ids[0]
 product_id = device_ids[1]
 
-target="ubuntu-16.04"
-target_directory="./ubuntu-16.04"
+target='ubuntu-16.04'
+target_directory='./ubuntu-16.04'
 
 # https://stackoverflow.com/a/36971820/1459103
 def parse_shell_var(line):
@@ -30,16 +34,16 @@ with open(target_directory + '/Vagrantfile.conf', 'r') as f:
 	configs = dict(parse_shell_var(line) for line in f if '=' in line)
 
 # Restore base snapshot
-snapshots = (subprocess.check_output(['vagrant', 'snapshot', 'list'], cwd=target_directory)).decode("utf8")
+snapshots = (subprocess.check_output(['vagrant', 'snapshot', 'list'], cwd=target_directory)).decode('utf8')
 if not re.match(r"" + re.escape(configs['SNAPSHOT_NAME']) + "", snapshots):
-	print("Snapshot not found")
+	print('Snapshot not found')
 	exit(1)
 subprocess.call(['vagrant', 'halt', '--force'], cwd=target_directory)
 subprocess.call(['VBoxManage', 'snapshot', configs['MACHINE_NAME'], 'restore', configs['SNAPSHOT_NAME']], cwd=target_directory)
 
 # Enable USB
 subprocess.call(['VBoxManage', 'modifyvm', configs['MACHINE_NAME'], '--usb', 'on'], cwd=target_directory)
-subprocess.call(['VBoxManage', 'modifyvm', configs['MACHINE_NAME'], '--usbxhci', 'on'], cwd=target_directory)
+subprocess.call(['VBoxManage', 'modifyvm', configs['MACHINE_NAME'], '--usbehci', 'on'], cwd=target_directory)
 
 # Add filter for our device
 subprocess.call([
@@ -57,7 +61,49 @@ subprocess.call([
 	product_id
 ], cwd=target_directory)
 
-# Run the tests
-subprocess.call(['vagrant', 'up'], cwd=target_directory)
-subprocess.call(['vagrant', 'ssh', '--', '-t', '/vbin/wifi-connect'], cwd=target_directory)
-subprocess.call(['vagrant', 'ssh', '--', '-t', '/vbin/wifi-test'], cwd=target_directory)
+now = datetime.datetime.utcnow()
+formatted = now.strftime('%Y-%m-%d-%H-%M-%S')
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
+log_dir = current_dir + '/logs/' + formatted
+
+os.mkdir(log_dir)
+
+def tee_command(command, log_file_path):
+	args = shlex.split(command)
+	proc = subprocess.Popen(args, cwd=target_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	with open(log_file_path, "w") as log_file:
+		stdoutdata, stderrdata = proc.communicate()
+		out = stdoutdata.decode('utf8')
+		# err = stderrdata.decode('utf8')
+		# print("stdout", out)
+		# print("stderr", err)
+		log_file.write(out)
+		data = json.loads(out)
+		error = data.get("error")
+		if error != None:
+			print(error)
+			return
+		
+		sum_received = data.get('end').get('sum_received').get('bits_per_second')
+		sum_sent = data.get('end').get('sum_sent').get('bits_per_second')
+		print((sum_received / 1000000) + ' Mbps')
+		print((sum_sent / 1000000) + ' Mbps')
+
+vagrant_up_log = open(log_dir + '/vagrant.log', 'w')
+subprocess.call(['vagrant', 'up'], cwd=target_directory, stdout=vagrant_up_log, stderr=vagrant_up_log)
+
+wifi_connect_log = open(log_dir + '/wifi-connect.log', 'w')
+subprocess.call(['vagrant', 'ssh', '--', '/vbin/wifi-connect'], cwd=target_directory, stdout=wifi_connect_log, stderr=wifi_connect_log)
+
+info_log = open(log_dir + '/info.log', 'w')
+subprocess.call(['vagrant', 'ssh', '--', '/vbin/info'], cwd=target_directory, stdout=info_log, stderr=info_log)
+
+for x in range(0, 50):
+	download_log_dir = log_dir + '/download-results.txt'
+	print('downloading: ' + download_log_dir)
+	tee_command('vagrant ssh -- /vbin/wifi-download-test.sh', download_log_dir)
+
+	upload_log_dir = log_dir + '/upload-results.txt'
+	print('uploading: ' + upload_log_dir)
+	tee_command('vagrant ssh -- /vbin/wifi-upload-test.sh', upload_log_dir)

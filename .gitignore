@@ -1,4 +1,4 @@
 .vagrant
 *.log
 Test.conf
-
+logs

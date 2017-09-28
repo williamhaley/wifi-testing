@@ -35,7 +35,7 @@ def graph(buckets, scale_min, scale_max, max_bar_width):
 	last_max = increment
 	highest_value = max(buckets)
 	count_width = len(str(highest_value))
-	precision = 2
+	precision = 0
 	for bucket in buckets:
 		scale = max_bar_width / highest_value
 		# TODO ceil or floor?

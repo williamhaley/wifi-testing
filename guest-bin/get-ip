@@ -6,4 +6,3 @@ NIC=$(/vbin/get-nic)
 IP=$(ifconfig "${NIC}" | grep "inet " | awk -F'[: ]+' '{ print $4 }')
 
 echo $IP
-

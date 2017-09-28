@@ -9,12 +9,12 @@ then
 fi
 
 (
-cd "${TARGET}"
-source Vagrantfile.conf
+	cd "${TARGET}"
+	source Vagrantfile.conf
 
-vagrant destroy
-vagrant up --no-provision > /dev/null
-vagrant provision
-vagrant halt
-vagrant snapshot save "default" "${SNAPSHOT_NAME}"
+	vagrant destroy
+	vagrant up --no-provision > /dev/null
+	vagrant provision
+	vagrant halt
+	vagrant snapshot save "default" "${SNAPSHOT_NAME}"
 )
