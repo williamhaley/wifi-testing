@@ -69,26 +69,22 @@ log_dir = current_dir + '/logs/' + formatted
 
 os.mkdir(log_dir)
 
-def tee_command(command, log_file_path):
+def run_test(command, log_file_path, key):
 	args = shlex.split(command)
 	proc = subprocess.Popen(args, cwd=target_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	with open(log_file_path, "w") as log_file:
-		stdoutdata, stderrdata = proc.communicate()
+		stdoutdata, stderrdata = proc.communicate(input=None)
 		out = stdoutdata.decode('utf8')
-		# err = stderrdata.decode('utf8')
-		# print("stdout", out)
-		# print("stderr", err)
 		log_file.write(out)
 		data = json.loads(out)
 		error = data.get("error")
 		if error != None:
 			print(error)
 			return
-		
-		sum_received = data.get('end').get('sum_received').get('bits_per_second')
-		sum_sent = data.get('end').get('sum_sent').get('bits_per_second')
-		print((sum_received / 1000000) + ' Mbps')
-		print((sum_sent / 1000000) + ' Mbps')
+		bits = data.get('end').get(key).get('bits_per_second')
+		mbps = bits / 1000000
+		print('{:f} {:s}'.format(mbps, 'Mbps'))
+		log_file.close()
 
 vagrant_up_log = open(log_dir + '/vagrant.log', 'w')
 subprocess.call(['vagrant', 'up'], cwd=target_directory, stdout=vagrant_up_log, stderr=vagrant_up_log)
@@ -101,9 +97,9 @@ subprocess.call(['vagrant', 'ssh', '--', '/vbin/info'], cwd=target_directory, st
 
 for x in range(0, 50):
 	download_log_dir = log_dir + '/download-results.txt'
-	print('downloading: ' + download_log_dir)
-	tee_command('vagrant ssh -- /vbin/wifi-download-test.sh', download_log_dir)
+	print('download test: ' + download_log_dir)
+	run_test('vagrant ssh -- /vbin/wifi-download-test.sh', download_log_dir, 'sum_received')
 
 	upload_log_dir = log_dir + '/upload-results.txt'
-	print('uploading: ' + upload_log_dir)
-	tee_command('vagrant ssh -- /vbin/wifi-upload-test.sh', upload_log_dir)
+	print('uploading test: ' + upload_log_dir)
+	run_test('vagrant ssh -- /vbin/wifi-upload-test.sh', upload_log_dir, 'sum_sent')
