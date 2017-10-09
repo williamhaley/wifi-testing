@@ -66,13 +66,13 @@ wifi_connect_log = open(log_dir + '/wifi-connect.log', 'w')
 subprocess.call(['vagrant', 'ssh', '--', '/vbin/wifi-connect'], cwd=target_directory, stdout=wifi_connect_log, stderr=wifi_connect_log)
 
 info_log = open(log_dir + '/info.log', 'w')
-subprocess.call(['vagrant', 'ssh', '--', '/vbin/info'], cwd=target_directory, stdout=info_log, stderr=info_log)
+subprocess.call(['vagrant', 'ssh', '--', '/vbin/info.sh'], cwd=target_directory, stdout=info_log, stderr=info_log)
 
 download_log_dir = log_dir + '/download-results.txt'
 upload_log_dir = log_dir + '/upload-results.txt'
 
 # 2 hours
-test_time_in_seconds = 60 * 60 * 2
+test_time_in_seconds = 60 * 60 * 4
 
 test_start = datetime.datetime.utcnow()
 run = 1

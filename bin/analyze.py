@@ -7,7 +7,8 @@ import math
 file_name = sys.argv[1]
 
 # Constants
-scale_max = 90
+scale_max = 50
+
 scale_min = 0
 max_buckets = 15
 max_bar_width = 10
