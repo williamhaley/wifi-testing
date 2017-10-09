@@ -8,58 +8,8 @@ import os
 import sys
 import json
 
-# Prompt to choose a USB device.
-devices = (subprocess.check_output(['lsusb'])).splitlines()
-devices = list(map(lambda device: device.decode('utf8'), devices))
-
-for index, device in enumerate(devices):
-	print('{:2d} | {}'.format(index + 1, device))
-device_index = int(input('\nSelect a device: '))
-
-# Parse selection.
-device = devices[device_index - 1]
-device_ids = re.findall(r'([a-zA-Z0-9]{4}):([a-zA-Z0-9]{4})', device)[0]
-vendor_id = device_ids[0]
-product_id = device_ids[1]
-
 target='ubuntu-16.04'
 target_directory='./ubuntu-16.04'
-
-# https://stackoverflow.com/a/36971820/1459103
-def parse_shell_var(line):
-	return shlex.split(line, posix=True)[0].split('=', 1)
-
-# Load config.
-with open(target_directory + '/Vagrantfile.conf', 'r') as f:
-	configs = dict(parse_shell_var(line) for line in f if '=' in line)
-
-# Restore base snapshot
-snapshots = (subprocess.check_output(['vagrant', 'snapshot', 'list'], cwd=target_directory)).decode('utf8')
-if not re.match(r"" + re.escape(configs['SNAPSHOT_NAME']) + "", snapshots):
-	print('Snapshot not found')
-	exit(1)
-subprocess.call(['vagrant', 'halt', '--force'], cwd=target_directory)
-subprocess.call(['VBoxManage', 'snapshot', configs['MACHINE_NAME'], 'restore', configs['SNAPSHOT_NAME']], cwd=target_directory)
-
-# Enable USB
-subprocess.call(['VBoxManage', 'modifyvm', configs['MACHINE_NAME'], '--usb', 'on'], cwd=target_directory)
-subprocess.call(['VBoxManage', 'modifyvm', configs['MACHINE_NAME'], '--usbxhci', 'on'], cwd=target_directory)
-
-# Add filter for our device
-subprocess.call([
-	'VBoxManage',
-	'usbfilter',
-	'add',
-	'0',
-	'--name',
-	'USB WiFI NIC',
-	'--target',
-	configs['MACHINE_NAME'],
-	'--vendorid',
-	vendor_id,
-	'--productid',
-	product_id
-], cwd=target_directory)
 
 now = datetime.datetime.utcnow()
 formatted = now.strftime('%Y-%m-%d-%H-%M-%S')
@@ -74,11 +24,11 @@ os.mkdir(log_dir + '/uploads')
 def run_test(command, summary_log_file_path, key):
 	args = shlex.split(command)
 	proc = subprocess.Popen(args, cwd=target_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	with open(summary_log_file_path, "w") as summary_log_file:
+	with open(summary_log_file_path, 'a') as summary_log_file:
 		stdoutdata, stderrdata = proc.communicate(input=None)
 
 		if proc.returncode != 0:
-			print("Unexpected error occurred (probably NIC not detected in VM)")
+			print("Unexpected error occurred (probably NIC not detected in VM. Kill this script, use a different USB port, and re-connect NIC)")
 			return
 
 		out = stdoutdata.decode('utf8')
@@ -98,7 +48,7 @@ def run_test(command, summary_log_file_path, key):
 		file_name = datetime.datetime.utcnow().strftime('%Y-%m-%d-%H-%M-%S') + '.json'
 
 		# Write complete log file for this test iteration.
-		test_log = open(log_dir + '/' + test_log_dir + '/' + file_name, 'a')
+		test_log = open(log_dir + '/' + test_log_dir + '/' + file_name, 'w')
 		test_log.write(out)
 		test_log.close()
 
@@ -106,7 +56,7 @@ def run_test(command, summary_log_file_path, key):
 		bits = data.get('end').get(key).get('bits_per_second')
 		mbps = bits / 1000000
 		print('{:f} {:s}'.format(mbps, 'Mbps'))
-		summary_log_file.write(str(mbps))
+		summary_log_file.write(str(mbps) + "\n")
 		summary_log_file.close()
 
 vagrant_up_log = open(log_dir + '/vagrant.log', 'w')
@@ -121,14 +71,23 @@ subprocess.call(['vagrant', 'ssh', '--', '/vbin/info'], cwd=target_directory, st
 download_log_dir = log_dir + '/download-results.txt'
 upload_log_dir = log_dir + '/upload-results.txt'
 
-max = 50
-width = len(str(max))
+# 2 hours
+test_time_in_seconds = 60 * 60 * 2
 
-for x in range(1, max):
+test_start = datetime.datetime.utcnow()
+run = 1
+
+def elapsed(start):
+	return (datetime.datetime.utcnow() - test_start).seconds
+
+while elapsed(test_start) < test_time_in_seconds:
+	print("Tests have been running for {:d} seconds. Will run until {:d} seconds elapsed.".format(elapsed(test_start), test_time_in_seconds))
 	try:
-		print('{:{width}d} | download test'.format(x, width=width))
+		print('{:d} | download test'.format(run))
 		run_test('vagrant ssh -- /vbin/wifi-download-test.sh', download_log_dir, 'sum_received')
-		print('{:{width}d} | upload test'.format(x, width=width))
+		print('{:d} | upload test'.format(run))
 		run_test('vagrant ssh -- /vbin/wifi-upload-test.sh', upload_log_dir, 'sum_sent')
 	except Exception as e:
 		print(e)
+
+	run = run + 1

@@ -10,17 +10,35 @@ Scripts and configurations to spin up machines for testing WiFi.
 * Virtualbox with the latest extension pack
 * Vagrant
 
-# Commands
+# Build
+
+Build the test VM.
 
 ```
 TARGET=ubuntu-16.04 ./build.sh
 ```
 
+# Test
+
+Unplug your USB NIC.
+
+Reset the VM before a test run.
+
 ```
-./run
+./reset.py
 ```
 
-# Sources
+Connect your USB NIC.
+
+Go into the VM settings in VirtualBox and add the USB WiFi device.
+
+Run tests against the VM.
+
+```
+./test.py
+```
+
+# Citations
 
 * [Connect a Usb device through Vagrant](https://code-chronicle.blogspot.com/2014/08/connect-usb-device-through-vagrant.html)
 * https://www.vagrantup.com/docs/cli/snapshot.html
@@ -33,4 +51,3 @@ TARGET=ubuntu-16.04 ./build.sh
 * https://askubuntu.com/questions/8322/use-network-manager-to-connect-to-a-wifi-access-point-on-the-command-line
 * https://fedoraproject.org/wiki/Networking/CLI
 * https://unix.stackexchange.com/questions/184877/how-to-list-all-loadable-kernel-modules
-
