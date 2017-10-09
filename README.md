@@ -38,6 +38,12 @@ Run tests against the VM.
 ./test.py
 ```
 
+Analyze the results.
+
+```
+./analyze.py
+```
+
 # Citations
 
 * [Connect a Usb device through Vagrant](https://code-chronicle.blogspot.com/2014/08/connect-usb-device-through-vagrant.html)
