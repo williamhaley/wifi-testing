@@ -43,7 +43,7 @@ subprocess.call(['VBoxManage', 'snapshot', configs['MACHINE_NAME'], 'restore', c
 
 # Enable USB
 subprocess.call(['VBoxManage', 'modifyvm', configs['MACHINE_NAME'], '--usb', 'on'], cwd=target_directory)
-subprocess.call(['VBoxManage', 'modifyvm', configs['MACHINE_NAME'], '--usbehci', 'on'], cwd=target_directory)
+subprocess.call(['VBoxManage', 'modifyvm', configs['MACHINE_NAME'], '--usbxhci', 'on'], cwd=target_directory)
 
 # Add filter for our device
 subprocess.call([
@@ -76,6 +76,11 @@ def run_test(command, summary_log_file_path, key):
 	proc = subprocess.Popen(args, cwd=target_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	with open(summary_log_file_path, "w") as summary_log_file:
 		stdoutdata, stderrdata = proc.communicate(input=None)
+
+		if proc.returncode != 0:
+			print("Unexpected error occurred (probably NIC not detected in VM)")
+			return
+
 		out = stdoutdata.decode('utf8')
 		data = json.loads(out)
 
@@ -93,7 +98,7 @@ def run_test(command, summary_log_file_path, key):
 		file_name = datetime.datetime.utcnow().strftime('%Y-%m-%d-%H-%M-%S') + '.json'
 
 		# Write complete log file for this test iteration.
-		test_log = open(log_dir + '/' + test_log_dir + '/' + file_name, 'w')
+		test_log = open(log_dir + '/' + test_log_dir + '/' + file_name, 'a')
 		test_log.write(out)
 		test_log.close()
 
