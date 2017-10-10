@@ -4,10 +4,20 @@ import math
 from optparse import OptionParser
 
 parser = OptionParser()
-parser.add_option('-m', '--scale-max', dest='scale_max', type='int', default=50, help='Greatest value shown on Y axis.')
-parser.add_option('-w', '--graph-width', dest='graph_width', type='int', default=10, help='Max number of "+" signs to show in the graph. Controls graph width.')
-parser.add_option('-b', '--max-buckets', dest='max_buckets', type='int', default=15, help='Number of bucketed data points to display on Y axis.')
-parser.add_option('-f', '--file', dest='file_path', type='string', help='Path of file to analyze and graph.')
+parser.add_option(
+	'-m', '--scale-max', dest='scale_max', type='int',
+	default=50, help='Greatest value shown on Y axis.'
+)
+parser.add_option('-w', '--graph-width', dest='graph_width', type='int',
+	default=10,
+	help='Max number of "+" signs to show in the graph. Controls graph width.'
+)
+parser.add_option('-b', '--max-buckets', dest='max_buckets', type='int',
+	default=15, help='Number of bucketed data points to display on Y axis.'
+)
+parser.add_option('-f', '--file', dest='file_path', type='string',
+	help='Path of file to analyze and graph.'
+)
 
 (options, args) = parser.parse_args()
 
@@ -69,17 +79,21 @@ def format_mbps(number, digit_width, precision_width):
 		precision_width=precision_width
 	)
 
-# Raw data from file.
-numbers = load_data(file_name)
+def main():
+	# Raw data from file.
+	numbers = load_data(file_name)
 
-# Bucket the data based on the max number of buckets we want.
-# Buckets represent ranges. 0 - 5, 6 - 10, etc. Based on whatever the max is.
-buckets = bucket_data(max_buckets, numbers, scale_max)
+	# Bucket the data based on the max number of buckets we want.
+	# Buckets represent ranges. 0 - 5, 6 - 10, etc. based on the max.
+	buckets = bucket_data(max_buckets, numbers, scale_max)
 
-# Display graph of the bucketed/grouped data.
-graph(buckets, scale_max, graph_width)
+	# Display graph of the bucketed/grouped data.
+	graph(buckets, scale_max, graph_width)
 
-print("total: {}".format(len(numbers)))
-print("max: {} Mbps".format(max(numbers)))
-print("min: {} Mbps".format(min(numbers)))
-print("average: {:.2f} Mbps".format(sum(numbers) / len(numbers)))
+	print("total: {}".format(len(numbers)))
+	print("max: {} Mbps".format(max(numbers)))
+	print("min: {} Mbps".format(min(numbers)))
+	print("average: {:.2f} Mbps".format(sum(numbers) / len(numbers)))
+
+if __name__ == "__main__":
+	main()
