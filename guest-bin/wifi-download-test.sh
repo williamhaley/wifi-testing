@@ -6,7 +6,7 @@ source /vconf/Test.conf
 
 START=$(date)
 
-IP=$(/vbin/get-ip)
+IP=$(/vbin/get-ip.sh)
 
 if [ -z "$IP" ];
 then
