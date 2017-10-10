@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import math
 from optparse import OptionParser
 
