@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import math
 from optparse import OptionParser
 
-file_name = sys.argv[1]
-
 parser = OptionParser()
 parser.add_option('-m', '--scale-max', dest='scale_max', type='int', default=50, help='Greatest value shown on Y axis.')
-parser.add_option('-w', '--bar-width', dest='graph_width', type='int', default=10, help='Max number of "+" signs to show in the graph. Controls graph width.')
+parser.add_option('-w', '--graph-width', dest='graph_width', type='int', default=10, help='Max number of "+" signs to show in the graph. Controls graph width.')
 parser.add_option('-b', '--max-buckets', dest='max_buckets', type='int', default=15, help='Number of bucketed data points to display on Y axis.')
+parser.add_option('-f', '--file', dest='file_path', type='string', help='Path of file to analyze and graph.')
 
 (options, args) = parser.parse_args()
 
 scale_max = options.scale_max
 graph_width = options.graph_width
 max_buckets = options.max_buckets
+if options.file_path is None:
+	parser.error('File not provided. View help for this script with --help')
+	exit(1)
+else:
+	file_name = options.file_path
 
 def load_data(file_name):
 	numbers = []
