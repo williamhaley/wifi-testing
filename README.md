@@ -2,6 +2,8 @@
 
 Scripts and configurations to spin up machines for testing WiFi.
 
+_This project is a sloppy collection of scripts. Files are here for documentation, but do not expect the best quality. I would **not** recommend adapting/forking this for your own needs, as I expect the scripts to change drastically_.
+
 # Prerequisites
 
 * lsusb
@@ -43,6 +45,8 @@ Analyze the results.
 ```
 ./analyze.py
 ```
+
+You can reset and retest as often as needed. Deleting the VM will require a rebuild.
 
 # Citations
 
