@@ -12,7 +12,8 @@ sudo apt-get install --no-install-recommends --assume-yes \
 	iperf3 \
 	lshw \
 	jq \
-	wireless-tools
+	wireless-tools \
+	build-essential
 
 # This kernel is what would be used by a new Ubuntu install. It includes the
 # brcmfmac module
