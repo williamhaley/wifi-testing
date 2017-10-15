@@ -6,11 +6,8 @@ _This project is a sloppy collection of scripts. Files are here for documentatio
 
 # Prerequisites
 
-* lsusb
-* tee
 * python3
-* Virtualbox with the latest extension pack
-* Vagrant
+* nmcli
 
 # Build
 

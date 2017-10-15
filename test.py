@@ -74,7 +74,7 @@ def module_info(module_name, field):
 		Description of the specified field for the module.
 	"""
 	try:
-		return subprocess.check_output(['modinfo', '-F', field, module_name]).decode('utf8')
+		return subprocess.check_output(['modinfo', '-F', field, module_name]).decode('utf8').strip()
 	except Exception as e:
 		return('Unable to read ' + field)
 
@@ -132,10 +132,10 @@ def log_system_info(log_dir, nic_name, server_address, client_address):
 	module_name = module_link_path.strip().split('/')[-1].strip()
 
 	info_log.write('module name: ' + module_name + '\n')
-	info_log.write('module filename: ' + module_info(module_name, 'filename'))
-	info_log.write('module version: ' + module_info(module_name, 'version'))
-	info_log.write('module author: ' + module_info(module_name, 'author'))
-	info_log.write('module description: ' + module_info(module_name, 'description'))
+	info_log.write('module filename: ' + module_info(module_name, 'filename') + '\n')
+	info_log.write('module version: ' + module_info(module_name, 'version') + '\n')
+	info_log.write('module author: ' + module_info(module_name, 'author') + '\n')
+	info_log.write('module description: ' + module_info(module_name, 'description') + '\n')
 
 	subprocess.Popen(['nmcli', '--pretty', '--fields', 'general,wifi-properties', 'device', 'show', 'enp0s20u11'], stdout=info_log, stderr=info_log)
 	info_log.flush()
