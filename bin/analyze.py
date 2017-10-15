@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import math
-from optparse import OptionParser
-from warnings import warn
+from argparse import ArgumentParser
 
 # Terminology derived from here - https://en.wikipedia.org/wiki/Histogram
 
@@ -90,25 +89,17 @@ def format_number(number, digit_width, precision_width):
 	)
 
 def main():
-	parser = OptionParser()
-	parser.add_option('-m', '--scale-max', dest='scale_max', type='int', help='Greatest value shown on Y axis.')
-	parser.add_option('-w', '--graph-width', dest='graph_width', type='int', default=10, help='Max number of "+" signs to show in the graph. Controls graph width.')
-	parser.add_option('-b', '--num-bins', dest='num_bins', type='int', default=15, help='Number of bins to display on Y axis.')
-	parser.add_option('-f', '--file', dest='file_path', type='string', help='Path of file to analyze and graph.')
-	(options, args) = parser.parse_args()
+	parser = ArgumentParser(description='Analyze WiFi data.', prog='analyze.py')
+	parser.add_argument('-m', '--scale-max', dest='scale_max', required=True, type=int, help='Greatest value shown on Y axis.')
+	parser.add_argument('-w', '--graph-width', dest='graph_width', type=int, default=10, help='Max number of "+" signs to show in the graph. Controls graph width.')
+	parser.add_argument('-b', '--num-bins', dest='num_bins', type=int, default=15, help='Number of bins to display on Y axis.')
+	parser.add_argument('-f', '--file', dest='file_path', required=True, type=str, help='File to analyze and graph.')
+	args = parser.parse_args()
 
-	graph_width = options.graph_width
-	num_bins = options.num_bins
-	if options.file_path is None:
-		parser.error('File not provided. View help for this script with --help')
-		exit(1)
-	else:
-		file_name = options.file_path
-	if options.scale_max is None:
-		parser.error('Scale max not provided. You must determine the maximum scale of your data.')
-		exit(1)
-	else:
-		scale_max = options.scale_max
+	graph_width = args.graph_width
+	num_bins = args.num_bins
+	file_name = args.file_path
+	scale_max = args.scale_max
 
 	# Raw data from file.
 	numbers = load_data(file_name)
@@ -123,8 +114,8 @@ def main():
 	histogram(bins, interval, graph_width)
 
 	print("total: {}".format(len(numbers)))
-	print("max: {} Mbps".format(max(numbers)))
-	print("min: {} Mbps".format(min(numbers)))
+	print("max: {:.2f} Mbps".format(max(numbers)))
+	print("min: {:.2f} Mbps".format(min(numbers)))
 	print("average: {:.2f} Mbps".format(sum(numbers) / len(numbers)))
 
 if __name__ == "__main__":
