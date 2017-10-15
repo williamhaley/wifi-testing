@@ -137,10 +137,10 @@ def log_system_info(log_dir, nic_name, server_address, client_address):
 	info_log.write('module author: ' + module_info(module_name, 'author'))
 	info_log.write('module description: ' + module_info(module_name, 'description'))
 
-	subprocess.Popen(['nmcli', '--pretty', '-f', 'general,wifi-properties', 'device', 'show', 'enp0s20u11'], stdout=info_log, stderr=info_log)
+	subprocess.Popen(['nmcli', '--pretty', '--fields', 'general,wifi-properties', 'device', 'show', 'enp0s20u11'], stdout=info_log, stderr=info_log)
 	info_log.flush()
 
-	connection_name = subprocess.check_output(['nmcli', '--get-values', 'general.CONNECTION', 'device', 'show', nic_name]).decode('utf8').strip()
+	connection_name = subprocess.check_output(['nmcli', '--mode', 'tabular', '--terse', '--fields', 'general.CONNECTION', 'device', 'show', nic_name]).decode('utf8').strip()
 
 	subprocess.Popen(['nmcli', '--pretty', 'connection', 'show', connection_name], stdout=info_log, stderr=info_log)
 	info_log.flush()
