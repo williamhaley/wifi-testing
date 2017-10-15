@@ -10,7 +10,7 @@ import os
 import sys
 import json
 import time
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 def get_wireless_nic_name():
 	"""
@@ -27,7 +27,7 @@ def get_wireless_nic_name():
 		return
 	return stdoutdata.decode('utf8').strip()
 
-def create_root_log_dir():
+def create_root_log_dir(test_name):
 	"""
 	Create the root log directory for this test run and return that path.
 
@@ -40,7 +40,7 @@ def create_root_log_dir():
 	now = datetime.datetime.utcnow()
 	formatted = now.strftime('%Y-%m-%d-%H-%M-%S')
 	current_dir = os.path.dirname(os.path.realpath(__file__))
-	log_dir = current_dir + '/logs/' + socket.gethostname() + '-' + formatted
+	log_dir = current_dir + '/logs/' + socket.gethostname() + '-' + test_name + '-' + formatted
 	os.makedirs(log_dir)
 	return log_dir
 
@@ -73,7 +73,25 @@ def module_info(module_name, field):
 	Returns:
 		Description of the specified field for the module.
 	"""
-	return subprocess.check_output(['modinfo', '-F', field, module_name]).decode('utf8')
+	try:
+		return subprocess.check_output(['modinfo', '-F', field, module_name]).decode('utf8')
+	except Exception as e:
+		return('Unable to read ' + field)
+
+def read_sys_file(path):
+	"""
+	Read the contents of a sysfs file. Return a generic error.
+
+	Returns:
+		String contents of file.
+	"""
+	try:
+		f = open(path, 'r')
+		lines = f.read()
+		f.close()
+		return lines
+	except Exception as e:
+		return('Unable to read ' + path)
 
 def log_system_info(log_dir, nic_name, server_address, client_address):
 	"""
@@ -91,9 +109,17 @@ def log_system_info(log_dir, nic_name, server_address, client_address):
 	info_log.write("kernel release: " + subprocess.check_output(['uname', '--kernel-release']).decode('utf8'))
 	info_log.write("kernel version: " + subprocess.check_output(['uname', '--kernel-version']).decode('utf8'))
 
-	info_log.write("interface: " + subprocess.check_output(['cat', '/sys/class/net/' + nic_name + '/device/interface']).decode('utf8'))
+	info_log.write("device: " + nic_name)
+	info_log.write("interface: " + read_sys_file('/sys/class/net/' + nic_name + '/device/interface'))
+	info_log.write("address: " + read_sys_file('/sys/class/net/' + nic_name + '/address'))
 
-	uevent = subprocess.check_output(['cat', '/sys/class/net/' + nic_name + '/device/uevent']).decode('utf8')
+	device_link_path = subprocess.check_output(['readlink', '-m', '/sys/class/net/' + nic_name]).decode('utf8').strip()
+	device_base_path = device_link_path + '/../../../'
+
+	info_log.write('vendor id: ' + read_sys_file(device_base_path + 'idVendor'))
+	info_log.write('product id: ' + read_sys_file(device_base_path + 'idProduct'))
+
+	uevent = read_sys_file('/sys/class/net/' + nic_name + '/device/uevent')
 	match = re.search('^DRIVER=(.*)\n', uevent, re.MULTILINE)
 	driver = match.group(1)
 	match = re.search('^DEVTYPE=(.*)\n', uevent, re.MULTILINE)
@@ -110,6 +136,14 @@ def log_system_info(log_dir, nic_name, server_address, client_address):
 	info_log.write('module version: ' + module_info(module_name, 'version'))
 	info_log.write('module author: ' + module_info(module_name, 'author'))
 	info_log.write('module description: ' + module_info(module_name, 'description'))
+
+	subprocess.Popen(['nmcli', '--pretty', '-f', 'general,wifi-properties', 'device', 'show', 'enp0s20u11'], stdout=info_log, stderr=info_log)
+	info_log.flush()
+
+	connection_name = subprocess.check_output(['nmcli', '--get-values', 'general.CONNECTION', 'device', 'show', nic_name]).decode('utf8').strip()
+
+	subprocess.Popen(['nmcli', '--pretty', 'connection', 'show', connection_name], stdout=info_log, stderr=info_log)
+	info_log.flush()
 
 	info_log.close()
 
@@ -223,22 +257,20 @@ def run_test(command, log_dir):
 	return data
 
 def main():
-	parser = OptionParser()
-	parser.add_option('-s', '--server', dest='server_address', type='string', help='Address of iperf3 server.')
-	(options, args) = parser.parse_args()
+	parser = ArgumentParser(description='Test a WiFi card against an iperf3 server', prog='test.py')
+	parser.add_argument('-s', '--server', required=True, dest='server_address', type=str, help='Address of iperf3 server.')
+	parser.add_argument('-n', '--name', required=True, dest='name', type=str, help='Name for this test run. Used to generate log file directory.')
+	args = parser.parse_args()
 
-	if options.server_address is None:
-		parser.error('Server address not provided. View help for this script with --help')
-		exit(1)
-	else:
-		server_address = options.server_address
+	server_address = args.server_address
+	test_name = args.name
 
 	nic_name = get_wireless_nic_name()
 	print("NIC name found:", nic_name)
 	wifi_ip = get_wireless_ip(nic_name)
 	print("WiFi ip found:", wifi_ip)
 
-	log_dir = create_root_log_dir()
+	log_dir = create_root_log_dir(test_name)
 
 	log_system_info(log_dir, nic_name, server_address, wifi_ip)
 
