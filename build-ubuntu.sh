@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
-
-if [ -z "$TARGET" ];
-then
-	echo "Specify a Target (ubuntu-16.04)"
-	exit 1
-fi
-
 (
-	cd "${TARGET}"
+	cd ubuntu-16.04
 	source Vagrantfile.conf
 
 	vagrant destroy

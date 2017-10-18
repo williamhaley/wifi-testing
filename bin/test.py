@@ -27,12 +27,16 @@ def get_wireless_nic_name():
 		return
 	return stdoutdata.decode('utf8').strip()
 
-def create_root_log_dir(test_name):
+def create_root_log_dir(root_dir, prefix):
 	"""
 	Create the root log directory for this test run and return that path.
 
 	The path is constructed relative to the current directory and uses the
 	hostname and current time when determining the directory name.
+
+	Args:
+		root_dir: Root directory in which to generate log files.
+		prefix:   Nickname to use for logging directory structure.
 
 	Returns:
 		log_dir: Absolute path to the root log directory for this test run.
@@ -40,7 +44,11 @@ def create_root_log_dir(test_name):
 	now = datetime.datetime.utcnow()
 	formatted = now.strftime('%Y-%m-%d-%H-%M-%S')
 	current_dir = os.path.dirname(os.path.realpath(__file__))
-	log_dir = current_dir + '/logs/' + socket.gethostname() + '-' + test_name + '-' + formatted
+
+	if root_dir == None:
+		root_dir = current_dir + '../logs/'
+
+	log_dir = root_dir + socket.gethostname() + '-' + prefix + '-' + formatted
 	os.makedirs(log_dir)
 	return log_dir
 
@@ -260,6 +268,7 @@ def main():
 	parser = ArgumentParser(description='Test a WiFi card against an iperf3 server', prog='test.py')
 	parser.add_argument('-s', '--server', required=True, dest='server_address', type=str, help='Address of iperf3 server.')
 	parser.add_argument('-n', '--name', required=True, dest='name', type=str, help='Name for this test run. Used to generate log file directory.')
+	parser.add_argument('-l', '--logs-dir', dest='logs_dir', type=str, help='Directory in which to place all test logs')
 	args = parser.parse_args()
 
 	server_address = args.server_address
@@ -270,7 +279,7 @@ def main():
 	wifi_ip = get_wireless_ip(nic_name)
 	print("WiFi ip found:", wifi_ip)
 
-	log_dir = create_root_log_dir(test_name)
+	log_dir = create_root_log_dir(args.log_dir, test_name)
 
 	log_system_info(log_dir, nic_name, server_address, wifi_ip)
 
