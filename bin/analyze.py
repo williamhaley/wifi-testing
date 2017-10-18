@@ -116,8 +116,6 @@ def main():
 	success_results.sort()
 	max_number = success_results[-1]
 
-	print(success_results)
-
 	if scale_max < max_number:
 		exit('Scale max is invalid. Scale max is lower than the maximum value in the data.')
 

@@ -48,7 +48,7 @@ def create_root_log_dir(root_dir, prefix):
 	if root_dir == None:
 		root_dir = current_dir + '../logs/'
 
-	log_dir = root_dir + socket.gethostname() + '-' + prefix + '-' + formatted
+	log_dir = root_dir + formatted + '-' + socket.gethostname() + '-' + prefix
 	os.makedirs(log_dir)
 	return log_dir
 
