@@ -1,10 +1,12 @@
 # WiFi Testing
 
-Scripts and configurations to spin up machines for testing WiFi.
+Scripts and configurations for testing WiFi devices.
 
-_This project is a sloppy collection of scripts. Files are here for documentation, but do not expect the best quality. I would **not** recommend adapting/forking this for your own needs, as I expect the scripts to change drastically_.
+Tests can be run directly on a host machine, or against a VirtualBox VM.
 
 You can either run `test.py` on your host, or use `test_vagrant.py` to run the tests from within a VM. **Run scripts from the root of this repo.**
+
+_This project is a sloppy collection of scripts. Files are here for documentation, but do not expect the best quality. I would **not** recommend adapting/forking this for your own needs, as I expect the scripts to change drastically_.
 
 # Prerequisites
 
