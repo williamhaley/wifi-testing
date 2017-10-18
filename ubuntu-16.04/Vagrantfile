@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
 	config.vm.provision "shell", path: "provision.sh"
 
 	config.vm.synced_folder "../bin/", "/vbin"
-	config.vm.synced_folder "../guest-conf/", "/vconf"
+	config.vm.synced_folder "../conf/", "/vconf"
 
 	config.vm.synced_folder "../logs", "/vlogs"
 end

@@ -14,5 +14,6 @@ target_directory='./ubuntu-16.04'
 now = datetime.datetime.utcnow()
 formatted = now.strftime('%Y-%m-%d-%H-%M-%S')
 
-subprocess.call(['vagrant', 'ssh', '--', '/vbin/wifi-connect'], cwd=target_directory)
-subprocess.call(['vagrant', 'ssh', '--', '/vbin/test.py'], cwd=target_directory, stdout=info_log, stderr=info_log)
+subprocess.call(['vagrant', 'up'], cwd=target_directory)
+subprocess.call(['vagrant', 'ssh', '--', '/vbin/wifi-connect.sh'], cwd=target_directory)
+subprocess.call(['vagrant', 'ssh', '--', '/vbin/test.py'], cwd=target_directory)
