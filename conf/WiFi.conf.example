@@ -1,3 +1,2 @@
 SSID=TheWiFiNetworkName
 PASSWORD=TheWiFiNetworkPassword
-IPERF_SERVER=IPAddressOfYourIperfServer

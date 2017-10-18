@@ -97,7 +97,7 @@ def read_sys_file(path):
 		f = open(path, 'r')
 		lines = f.read()
 		f.close()
-		return lines
+		return lines.strip()
 	except Exception as e:
 		return('Unable to read ' + path)
 
@@ -118,16 +118,16 @@ def log_system_info(log_dir, nic_name, server_address, client_address):
 	info_log.write("kernel version: " + subprocess.check_output(['uname', '--kernel-version']).decode('utf8'))
 
 	info_log.write("device: " + nic_name)
-	info_log.write("interface: " + read_sys_file('/sys/class/net/' + nic_name + '/device/interface'))
-	info_log.write("address: " + read_sys_file('/sys/class/net/' + nic_name + '/address'))
+	info_log.write("interface: " + read_sys_file('/sys/class/net/' + nic_name + '/device/interface') + '\n')
+	info_log.write("address: " + read_sys_file('/sys/class/net/' + nic_name + '/address') + '\n')
 
 	device_link_path = subprocess.check_output(['readlink', '-m', '/sys/class/net/' + nic_name]).decode('utf8').strip()
 	device_base_path = device_link_path + '/../../../'
 
-	info_log.write('vendor id: ' + read_sys_file(device_base_path + 'idVendor'))
-	info_log.write('product id: ' + read_sys_file(device_base_path + 'idProduct'))
+	info_log.write('vendor id: ' + read_sys_file(device_base_path + 'idVendor') + '\n')
+	info_log.write('product id: ' + read_sys_file(device_base_path + 'idProduct') + '\n')
 
-	uevent = read_sys_file('/sys/class/net/' + nic_name + '/device/uevent')
+	uevent = read_sys_file('/sys/class/net/' + nic_name + '/device/uevent' + '\n')
 	match = re.search('^DRIVER=(.*)\n', uevent, re.MULTILINE)
 	driver = match.group(1)
 	match = re.search('^DEVTYPE=(.*)\n', uevent, re.MULTILINE)

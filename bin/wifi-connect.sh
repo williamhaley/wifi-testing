@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-source /vconf/Test.conf
+source /vconf/WiFi.conf
 
 NIC=$(/vbin/get-nic.sh)
 
