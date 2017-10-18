@@ -101,6 +101,9 @@ def read_sys_file(path):
 	except Exception as e:
 		return('Unable to read ' + path)
 
+def uname_info(field):
+	return subprocess.check_output(['uname', field]).decode('utf8').strip()
+
 def log_system_info(log_dir, nic_name, server_address, client_address):
 	"""
 	Log a range of information about the nic and test machine.
@@ -112,12 +115,12 @@ def log_system_info(log_dir, nic_name, server_address, client_address):
 		client_address: IP address of the test machine.
 	"""
 	info_log = open(log_dir + '/info.log', 'w')
-	info_log.write("server: " + server_address + "\n")
-	info_log.write("client: " + client_address + "\n")
-	info_log.write("kernel release: " + subprocess.check_output(['uname', '--kernel-release']).decode('utf8'))
-	info_log.write("kernel version: " + subprocess.check_output(['uname', '--kernel-version']).decode('utf8'))
+	info_log.write("server: " + server_address + '\n')
+	info_log.write("client: " + client_address + '\n')
+	info_log.write("kernel release: " + uname_info('--kernel-release') + '\n')
+	info_log.write("kernel version: " + uname_info('--kernel-version') + '\n')
 
-	info_log.write("device: " + nic_name)
+	info_log.write("device: " + nic_name + '\n')
 	info_log.write("interface: " + read_sys_file('/sys/class/net/' + nic_name + '/device/interface') + '\n')
 	info_log.write("address: " + read_sys_file('/sys/class/net/' + nic_name + '/address') + '\n')
 
@@ -128,13 +131,7 @@ def log_system_info(log_dir, nic_name, server_address, client_address):
 	info_log.write('product id: ' + read_sys_file(device_base_path + 'idProduct') + '\n')
 
 	uevent = read_sys_file('/sys/class/net/' + nic_name + '/device/uevent' + '\n')
-	match = re.search('^DRIVER=(.*)\n', uevent, re.MULTILINE)
-	driver = match.group(1)
-	match = re.search('^DEVTYPE=(.*)\n', uevent, re.MULTILINE)
-	devtype = match.group(1)
-
-	info_log.write("driver: " + driver + "\n")
-	info_log.write("devtype: " + devtype + "\n")
+	info_log.write("uevent:\n" + uevent + '\n')
 
 	module_link_path = subprocess.check_output(['readlink', '-m', '/sys/class/net/' + nic_name + '/device/driver/module']).decode('utf8')
 	module_name = module_link_path.strip().split('/')[-1].strip()
@@ -222,7 +219,7 @@ def download_test(download_log_dir, summary_log_file_path, client_ip, server_ip)
 	mbps = bits / 1000000
 	print('{:f} {:s}'.format(mbps, 'Mbps'))
 	with open(summary_log_file_path, 'a') as summary_log_file:
-		summary_log_file.write(str(mbps) + "\n")
+		summary_log_file.write(str(mbps) + '\n')
 		summary_log_file.close()
 
 def upload_test(upload_log_dir, summary_log_file_path, client_ip, server_ip):
@@ -243,7 +240,7 @@ def upload_test(upload_log_dir, summary_log_file_path, client_ip, server_ip):
 	mbps = bits / 1000000
 	print('{:f} {:s}'.format(mbps, 'Mbps'))
 	with open(summary_log_file_path, 'a') as summary_log_file:
-		summary_log_file.write(str(mbps) + "\n")
+		summary_log_file.write(str(mbps) + '\n')
 		summary_log_file.close()
 
 def run_test(command, log_dir):
