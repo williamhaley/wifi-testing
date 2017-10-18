@@ -181,7 +181,9 @@ def run_tests(log_dir, client_ip, server_ip):
 		except Exception as e:
 			print('Error with download test.')
 			print(e)
-			time.sleep(2)
+			f = open(download_summary_results, 'a')
+			f.write('-1\n')
+			f.close()
 
 		time.sleep(2)
 
@@ -191,6 +193,9 @@ def run_tests(log_dir, client_ip, server_ip):
 		except Exception as e:
 			print('Error with upload test.')
 			print(e)
+			f = open(upload_summary_results, 'a')
+			f.write('-1\n')
+			f.close()
 
 		time.sleep(2)
 
