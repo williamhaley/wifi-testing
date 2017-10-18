@@ -84,6 +84,7 @@ def module_info(module_name, field):
 	try:
 		return subprocess.check_output(['modinfo', '-F', field, module_name]).decode('utf8').strip()
 	except Exception as e:
+		print(e)
 		return('Unable to read ' + field)
 
 def read_sys_file(path):
@@ -99,6 +100,7 @@ def read_sys_file(path):
 		f.close()
 		return lines.strip()
 	except Exception as e:
+		print(e)
 		return('Unable to read ' + path)
 
 def uname_info(field):
