@@ -16,4 +16,4 @@ formatted = now.strftime('%Y-%m-%d-%H-%M-%S')
 
 subprocess.call(['vagrant', 'up'], cwd=target_directory)
 subprocess.call(['vagrant', 'ssh', '--', '/vbin/wifi-connect.sh'], cwd=target_directory)
-subprocess.call(['vagrant', 'ssh', '--', '/vbin/test.py'], cwd=target_directory)
+subprocess.call(['vagrant', 'ssh', '--', '/vbin/test.py', '--logs-dir', '/vlogs/', '--name', 'TEST', '--server', '192.168.0.116'], cwd=target_directory)

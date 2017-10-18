@@ -279,11 +279,11 @@ def main():
 	wifi_ip = get_wireless_ip(nic_name)
 	print("WiFi ip found:", wifi_ip)
 
-	log_dir = create_root_log_dir(args.log_dir, test_name)
+	logs_dir = create_root_log_dir(args.logs_dir, test_name)
 
-	log_system_info(log_dir, nic_name, server_address, wifi_ip)
+	log_system_info(logs_dir, nic_name, server_address, wifi_ip)
 
-	run_tests(log_dir, wifi_ip, server_address)
+	run_tests(logs_dir, wifi_ip, server_address)
 
 if __name__ == "__main__":
 	main()
