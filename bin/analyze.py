@@ -104,19 +104,32 @@ def main():
 	# Raw data from file.
 	numbers = load_data(file_name)
 
-	numbers.sort()
-	max_number = numbers[-1]
+	success_results = list(filter(lambda x: x != -1, numbers))
+	errored_results = list(filter(lambda x: x == -1, numbers))
+
+	success_count = len(success_results)
+	error_count = len(errored_results)
+
+	if success_count <= 0:
+		exit('No successful results out of ' + str(len(numbers)) + ' test runs.')
+
+	success_results.sort()
+	max_number = success_results[-1]
+
+	print(success_results)
 
 	if scale_max < max_number:
 		exit('Scale max is invalid. Scale max is lower than the maximum value in the data.')
 
-	interval, bins = bin_values(numbers, num_bins, scale_max)
+	interval, bins = bin_values(success_results, num_bins, scale_max)
 	histogram(bins, interval, graph_width)
 
 	print("total: {}".format(len(numbers)))
-	print("max: {:.2f} Mbps".format(max(numbers)))
-	print("min: {:.2f} Mbps".format(min(numbers)))
-	print("average: {:.2f} Mbps".format(sum(numbers) / len(numbers)))
+	print("max: {:.2f} Mbps".format(max(success_results)))
+	print("min: {:.2f} Mbps".format(min(success_results)))
+	print("average: {:.2f} Mbps".format(sum(success_results) / success_count))
+	print("sucess: {}".format(success_count))
+	print("errors: {}".format(error_count))
 
 if __name__ == "__main__":
 	main()
