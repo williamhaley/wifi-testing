@@ -84,8 +84,7 @@ def module_info(module_name, field):
 	try:
 		return subprocess.check_output(['modinfo', '-F', field, module_name]).decode('utf8').strip()
 	except Exception as e:
-		print(e)
-		return('Unable to read ' + field)
+		return('Unable to read ' + field + '. ' + str(e))
 
 def read_sys_file(path):
 	"""
@@ -100,8 +99,7 @@ def read_sys_file(path):
 		f.close()
 		return lines.strip()
 	except Exception as e:
-		print(e)
-		return('Unable to read ' + path)
+		return('Unable to read ' + path + '. ' + str(e))
 
 def uname_info(field):
 	return subprocess.check_output(['uname', field]).decode('utf8').strip()
@@ -132,7 +130,7 @@ def log_system_info(log_dir, nic_name, server_address, client_address):
 	info_log.write('vendor id: ' + read_sys_file(device_base_path + 'idVendor') + '\n')
 	info_log.write('product id: ' + read_sys_file(device_base_path + 'idProduct') + '\n')
 
-	uevent = read_sys_file('/sys/class/net/' + nic_name + '/device/uevent' + '\n')
+	uevent = read_sys_file('/sys/class/net/' + nic_name + '/device/uevent')
 	info_log.write("uevent:\n" + uevent + '\n')
 
 	module_link_path = subprocess.check_output(['readlink', '-m', '/sys/class/net/' + nic_name + '/device/driver/module']).decode('utf8')
