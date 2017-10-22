@@ -7,6 +7,7 @@ import datetime
 import os
 import sys
 import json
+import time
 from argparse import ArgumentParser
 
 target='ubuntu-16.04'
@@ -20,5 +21,9 @@ parser.add_argument('-n', '--name', required=True, dest='name', type=str, help='
 args = parser.parse_args()
 
 subprocess.call(['vagrant', 'up'], cwd=target_directory)
+
+# Sleep. Let things settle a bit after the box comes up.
+time.sleep(5)
+
 subprocess.call(['vagrant', 'ssh', '--', '/vbin/wifi-connect.sh'], cwd=target_directory)
 subprocess.call(['vagrant', 'ssh', '--', '/vbin/test.py', '--logs-dir', '/vlogs/', '--name', args.name, '--server', '192.168.0.116'], cwd=target_directory)
