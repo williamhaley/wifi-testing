@@ -11,15 +11,16 @@ import sys
 import json
 import time
 from argparse import ArgumentParser
+from get_ip import get_wireless_ip
 
 def get_wireless_nic_name():
 	"""
-	Use nmcli to determine the wireless nic.
+	Determine the wireless USB WiFi nic name.
 
 	Returns:
 		Interface name string
 	"""
-	command = "nmcli device status | grep -i wifi | awk '{print $1}'"
+	command = "lshw -c network -businfo | grep -i usb | awk '{print $2}'"
 	proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	stdoutdata, stderrdata = proc.communicate(input=None)
 	if proc.returncode != 0:
@@ -51,24 +52,6 @@ def create_root_log_dir(root_dir, prefix):
 	log_dir = root_dir + formatted + '-' + socket.gethostname() + '-' + prefix
 	os.makedirs(log_dir)
 	return log_dir
-
-def get_wireless_ip(nic_name):
-	"""
-	Get ip address of the specified network device.
-
-	Args:
-		nic_name: Name of the interface.
-
-	Returns:
-
-		IP address
-	"""
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	return socket.inet_ntoa(fcntl.ioctl(
-		s.fileno(),
-		0x8915,  # SIOCGIFADDR
-		struct.pack('256s', bytes(nic_name[:15], 'utf-8'))
-	)[20:24])
 
 def module_info(module_name, field):
 	"""
@@ -142,13 +125,13 @@ def log_system_info(log_dir, nic_name, server_address, client_address):
 	info_log.write('module author: ' + module_info(module_name, 'author') + '\n')
 	info_log.write('module description: ' + module_info(module_name, 'description') + '\n')
 
-	subprocess.Popen(['nmcli', '--pretty', '--fields', 'general,wifi-properties', 'device', 'show', 'enp0s20u11'], stdout=info_log, stderr=info_log)
-	info_log.flush()
+	# subprocess.Popen(['nmcli', '--pretty', '--fields', 'general,wifi-properties', 'device', 'show', 'enp0s20u11'], stdout=info_log, stderr=info_log)
+	# info_log.flush()
 
-	connection_name = subprocess.check_output(['nmcli', '--mode', 'tabular', '--terse', '--fields', 'general.CONNECTION', 'device', 'show', nic_name]).decode('utf8').strip()
+	# connection_name = subprocess.check_output(['nmcli', '--mode', 'tabular', '--terse', '--fields', 'general.CONNECTION', 'device', 'show', nic_name]).decode('utf8').strip()
 
-	subprocess.Popen(['nmcli', '--pretty', 'connection', 'show', connection_name], stdout=info_log, stderr=info_log)
-	info_log.flush()
+	# subprocess.Popen(['nmcli', '--pretty', 'connection', 'show', connection_name], stdout=info_log, stderr=info_log)
+	# info_log.flush()
 
 	info_log.close()
 

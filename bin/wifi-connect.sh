@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
 
-source /vconf/WiFi.conf
+nic=$(lshw -c network -businfo | grep -i usb | awk '{print $2}')
 
-NIC=$(/vbin/get-nic.sh)
+wpa_supplicant \
+	-B \
+	-i ${nic} \
+	-c /etc/wpa_supplicant/wpa_supplicant.conf \
+	-Dwext
 
-echo "Using kernel: $(uname -a) on $(lsb_release -a)"
-echo "WiFi NIC is: ${NIC}"
-sudo nmcli device wifi connect "${SSID}" password "${PASSWORD}"
-echo "Connected to WiFi: ${SSID}"
+wpa_cli status
+
+dhcpcd ${nic}
+
+echo "Using kernel: $(uname -a)"
+echo "WiFi device name is: ${nic}"

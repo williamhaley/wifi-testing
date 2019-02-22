@@ -1,3 +1,5 @@
 .vagrant
-Test.conf
+wpa_supplicant.conf
 *.log
+__pycache__
+

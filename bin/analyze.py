@@ -126,7 +126,7 @@ def main():
 	print("max: {:.2f} Mbps".format(max(success_results)))
 	print("min: {:.2f} Mbps".format(min(success_results)))
 	print("average: {:.2f} Mbps".format(sum(success_results) / success_count))
-	print("sucess: {}".format(success_count))
+	print("success: {}".format(success_count))
 	print("errors: {}".format(error_count))
 
 if __name__ == "__main__":
